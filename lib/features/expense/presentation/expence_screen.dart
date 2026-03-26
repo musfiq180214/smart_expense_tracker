@@ -8,6 +8,7 @@ import 'package:smart_expense_tracker/features/expense/widgets/expense_list.dart
 import 'package:smart_expense_tracker/features/expense/widgets/expense_title_dropdown.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/shimmer_chart.dart';
 import '../provider/expense_provider.dart';
+import 'expence_list_screen.dart';
 
 class ExpenseScreen extends ConsumerStatefulWidget {
   const ExpenseScreen({super.key});
@@ -198,6 +199,44 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
 
               const SizedBox(height: 16),
 
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ExpenseListScreen()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                    backgroundColor: Colors.orange,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.list, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        "Expense List",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
               /// LIST
               SizedBox(
                 height: 200,
@@ -298,7 +337,7 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
               const SizedBox(height: 10),
 
               SizedBox(
-                height: 220,
+                height: 300,
                 child: Consumer(
                   builder: (context, ref, _) {
                     final filteredExpenses = ref.watch(

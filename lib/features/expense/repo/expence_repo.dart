@@ -8,6 +8,15 @@ class ExpenseRepo {
   Future<void> addExpense(Expense expense) async {
     await _db.collection('expenses').doc(expense.id).set(expense.toMap());
   }
+  Future<void> updateExpense(Expense expense) async {
+    await _db.collection('expenses').doc(expense.id).update(expense.toMap());
+  }
+
+  Future<void> deleteExpense(String expenseId) async {
+    await _db.collection('expenses').doc(expenseId).delete();
+  }
+
+
 
   Stream<List<Expense>> getExpenses() {
     final user = FirebaseAuth.instance.currentUser;
