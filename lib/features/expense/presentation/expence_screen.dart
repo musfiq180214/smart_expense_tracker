@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/expence_pie_chart.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/expense_chart.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/expense_list.dart';
+import 'package:smart_expense_tracker/features/expense/widgets/expense_title_dropdown.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/shimmer_chart.dart';
 import '../provider/expense_provider.dart';
 
@@ -14,9 +15,19 @@ class ExpenseScreen extends ConsumerStatefulWidget {
 }
 
 class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
+  @override
+  void dispose() {
+    titleController.dispose();
+    amountController.dispose();
+    titleFocusNode.dispose();
+    super.dispose();
+  }
+
   final titleController = TextEditingController();
   final amountController = TextEditingController();
   DateTime selectedDate = DateTime.now();
+  bool isDropdownOpen = false;
+  final FocusNode titleFocusNode = FocusNode();
 
   void addExpense() async {
     final title = titleController.text;
@@ -82,9 +93,33 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               /// INPUT
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: "Title"),
+              Consumer(
+                builder: (context, ref, _) {
+                  final expensesAsync = ref.watch(expenseStreamProvider);
+
+                  return expensesAsync.when(
+                    data: (expenses) {
+                      final titles = expenses
+                          .map((e) => e.title)
+                          .toSet()
+                          .toList();
+
+                      return TitleDropdownField(
+                        options: titles,
+                        controller: titleController,
+                        focusNode: titleFocusNode,
+                      );
+                    },
+                    loading: () => TextField(
+                      controller: titleController,
+                      decoration: const InputDecoration(labelText: "Title"),
+                    ),
+                    error: (_, __) => TextField(
+                      controller: titleController,
+                      decoration: const InputDecoration(labelText: "Title"),
+                    ),
+                  );
+                },
               ),
               TextField(
                 controller: amountController,
