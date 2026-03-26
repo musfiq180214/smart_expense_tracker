@@ -1,17 +1,36 @@
-# smart_expense_tracker
+# Smart Expense Tracker
 
-A new Flutter project.
+**Smart Expense Tracker** is a Flutter-based mobile application that helps users manage their personal expenses efficiently. It provides features such as expense tracking, visual analytics, user authentication, and dynamic filtering.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## Features
 
-A few resources to get you started if this is your first Flutter project:
+### Authentication & User Management
+- Firebase authentication with **Login feature**.
+- User-specific rules for Firebase data.
+- Each user can **add and manage only their own expenses**.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+### Expense Management
+- **Add Expense** with dropdown suggestions for faster entry.
+- **Edit & Delete Expenses**.
+- Expense list with detailed view of all added expenses.
+- Select expenses by year using a **year dropdown filter**.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Analytics
+- **Expense Distribution Pie Chart** to visualize spending by category.
+- **Bar/Line charts** for monthly/yearly expenses.
+- Shimmer effect while loading data for better UX.
+
+### UI/UX Enhancements
+- Smooth scrolling and responsive layouts.
+- Floating snackbars for error/success messages.
+- Clean and modern interface for easy expense management.
+
+---
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/smart-expense-tracker.git
