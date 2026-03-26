@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smart_expense_tracker/features/auth/presentation/login_screen.dart';
+import 'package:smart_expense_tracker/features/auth/provider/auth_provider.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/expence_pie_chart.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/expense_chart.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/expense_list.dart';
@@ -84,7 +86,23 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
     final expensesAsync = ref.watch(expenseStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Expense Tracker")),
+      appBar: AppBar(
+        title: const Text("Expense Tracker"),
+        automaticallyImplyLeading: false, // removes back button
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              await ref.read(authRepoProvider).logout();
+              // Go back to login screen
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(12),
@@ -184,10 +202,25 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
               SizedBox(
                 height: 200,
                 child: expensesAsync.when(
-                  data: (data) => ExpenseList(expenses: data),
+                  data: (data) {
+                    if (data.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          "No expenses found",
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                      );
+                    }
+                    return ExpenseList(expenses: data);
+                  },
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (_, __) => const Text("Error"),
+                  error: (_, __) => const Center(
+                    child: Text(
+                      "Error loading expenses",
+                      style: TextStyle(color: Colors.red),
+                    ),
+                  ),
                 ),
               ),
 
@@ -233,9 +266,17 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                     final expensesAsync = ref.watch(expenseStreamProvider);
 
                     return expensesAsync.when(
-                      data: (_) => ExpenseChart(expenses: filteredExpenses),
+                      data: (data) {
+                        if (data.isEmpty) {
+                          return const Center(
+                            child: Text("No data to display"),
+                          );
+                        }
+                        return ExpenseChart(expenses: filteredExpenses);
+                      },
                       loading: () => const ShimmerChart(),
-                      error: (_, __) => const Text("Error"),
+                      error: (_, __) =>
+                          const Center(child: Text("Error loading chart")),
                     );
                   },
                 ),
@@ -266,9 +307,17 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
                     final expensesAsync = ref.watch(expenseStreamProvider);
 
                     return expensesAsync.when(
-                      data: (_) => ExpensePieChart(expenses: filteredExpenses),
+                      data: (data) {
+                        if (data.isEmpty) {
+                          return const Center(
+                            child: Text("No data to display"),
+                          );
+                        }
+                        return ExpensePieChart(expenses: filteredExpenses);
+                      },
                       loading: () => const ShimmerChart(),
-                      error: (_, __) => const Text("Error"),
+                      error: (_, __) =>
+                          const Center(child: Text("Error loading chart")),
                     );
                   },
                 ),

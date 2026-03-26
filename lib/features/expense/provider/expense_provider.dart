@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:smart_expense_tracker/features/expense/domain/expence_model.dart';
@@ -13,12 +14,15 @@ final expenseStreamProvider = StreamProvider<List<Expense>>((ref) {
 final addExpenseProvider = Provider((ref) {
   return (String title, double amount, DateTime date) async {
     final repo = ref.read(expenseRepoProvider);
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) throw Exception("User not logged in");
 
     final expense = Expense(
       id: const Uuid().v4(),
       title: title,
       amount: amount,
       date: date,
+      userId: user.uid,
     );
 
     await repo.addExpense(expense);
