@@ -11,7 +11,7 @@ class ShimmerChart extends StatelessWidget {
       highlightColor: Colors.grey.shade100,
       child: Container(
         width: double.infinity,
-        height: 200,
+        height: 150,
         color: Colors.white,
       ),
     );

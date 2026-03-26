@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:smart_expense_tracker/features/expense/widgets/expence_pie_chart.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/expense_chart.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/expense_list.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/shimmer_chart.dart';
@@ -76,133 +77,171 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
       resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// INPUT
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(labelText: "Title"),
-            ),
-            TextField(
-              controller: amountController,
-              decoration: const InputDecoration(labelText: "Amount"),
-              keyboardType: TextInputType.number,
-            ),
-
-            Row(
-              children: [
-                Text("${selectedDate.toLocal()}".split(' ')[0]),
-                const Spacer(),
-                TextButton(
-                  onPressed: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime.now(),
-                      initialDate: selectedDate,
-                    );
-                    if (picked != null) setState(() => selectedDate = picked);
-                  },
-                  child: const Text("Pick Date"),
-                ),
-              ],
-            ),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: addExpense,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 4,
-                  backgroundColor: Colors.deepPurple,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.add, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      "Add Expense",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// INPUT
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: "Title"),
               ),
-            ),
-            const SizedBox(height: 10),
-
-            /// LIST (unchanged)
-            SizedBox(
-              height: 200,
-              child: expensesAsync.when(
-                data: (data) => ExpenseList(expenses: data),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, __) => const Text("Error"),
+              TextField(
+                controller: amountController,
+                decoration: const InputDecoration(labelText: "Amount"),
+                keyboardType: TextInputType.number,
               ),
-            ),
 
-            /// ✅ YEAR DROPDOWN + CHART
-            Column(
-              children: [
-                /// DROPDOWN
-                Consumer(
-                  builder: (context, ref, _) {
-                    final years = ref.watch(availableYearsProvider);
-                    final selectedYear = ref.watch(selectedYearProvider);
-
-                    if (years.isEmpty) return const SizedBox();
-
-                    return DropdownButton<int>(
-                      value: selectedYear,
-                      items: years
-                          .map(
-                            (year) => DropdownMenuItem(
-                              value: year,
-                              child: Text(year.toString()),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (value) {
-                        if (value != null) {
-                          ref.read(selectedYearProvider.notifier).state = value;
-                        }
-                      },
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 10),
-
-                /// CHART
-                SizedBox(
-                  height: 200,
-                  child: Consumer(
-                    builder: (context, ref, _) {
-                      final filteredExpenses = ref.watch(
-                        filteredExpensesProvider,
+              Row(
+                children: [
+                  Text("${selectedDate.toLocal()}".split(' ')[0]),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                        initialDate: selectedDate,
                       );
-                      final expensesAsync = ref.watch(expenseStreamProvider);
-
-                      return expensesAsync.when(
-                        data: (_) => ExpenseChart(expenses: filteredExpenses),
-                        loading: () => const ShimmerChart(),
-                        error: (_, __) => const Text("Error"),
-                      );
+                      if (picked != null) {
+                        setState(() => selectedDate = picked);
+                      }
                     },
+                    child: const Text("Pick Date"),
+                  ),
+                ],
+              ),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: addExpense,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 4,
+                    backgroundColor: Colors.deepPurple,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.add, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        "Add Expense",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ],
+              ),
+
+              const SizedBox(height: 16),
+
+              /// LIST
+              SizedBox(
+                height: 200,
+                child: expensesAsync.when(
+                  data: (data) => ExpenseList(expenses: data),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (_, __) => const Text("Error"),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              /// YEAR DROPDOWN
+              Consumer(
+                builder: (context, ref, _) {
+                  final years = ref.watch(availableYearsProvider);
+                  final selectedYear = ref.watch(selectedYearProvider);
+
+                  if (years.isEmpty) return const SizedBox();
+
+                  return DropdownButton<int>(
+                    value: selectedYear,
+                    items: years
+                        .map(
+                          (year) => DropdownMenuItem(
+                            value: year,
+                            child: Text(year.toString()),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        ref.read(selectedYearProvider.notifier).state = value;
+                      }
+                    },
+                  );
+                },
+              ),
+
+              const SizedBox(height: 16),
+
+              /// BAR / LINE CHART
+              SizedBox(
+                height: 180,
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final filteredExpenses = ref.watch(
+                      filteredExpensesProvider,
+                    );
+                    final expensesAsync = ref.watch(expenseStreamProvider);
+
+                    return expensesAsync.when(
+                      data: (_) => ExpenseChart(expenses: filteredExpenses),
+                      loading: () => const ShimmerChart(),
+                      error: (_, __) => const Text("Error"),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              /// 🥧 PIE CHART SECTION
+              Consumer(
+                builder: (context, ref, _) {
+                  final selectedYear = ref.watch(selectedYearProvider);
+
+                  return Text(
+                    "Expense Distribution ($selectedYear)",
+                    style: Theme.of(context).textTheme.titleMedium,
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+
+              SizedBox(
+                height: 220,
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final filteredExpenses = ref.watch(
+                      filteredExpensesProvider,
+                    );
+                    final expensesAsync = ref.watch(expenseStreamProvider);
+
+                    return expensesAsync.when(
+                      data: (_) => ExpensePieChart(expenses: filteredExpenses),
+                      loading: () => const ShimmerChart(),
+                      error: (_, __) => const Text("Error"),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
