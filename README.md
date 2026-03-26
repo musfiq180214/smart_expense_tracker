@@ -7,7 +7,7 @@
 ## Features
 
 ### Authentication & User Management
-- Firebase authentication with **Login feature**.
+- Firebase authentication with **Login and Registration feature**.
 - User-specific rules for Firebase data.
 - Each user can **add and manage only their own expenses**.
 
