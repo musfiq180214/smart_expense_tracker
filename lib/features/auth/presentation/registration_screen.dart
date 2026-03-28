@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:smart_expense_tracker/features/auth/repo/auth_repo.dart';
@@ -13,16 +14,23 @@ class RegistrationScreen extends ConsumerStatefulWidget {
 
 class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
   final emailController = TextEditingController();
+  final contactController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
   bool loading = false;
+
+  bool isValidPassword(String password) {
+    final regex = RegExp(r'^(?=.*[@])(?=.*[0-9])(?=.*[A-Za-z]).{8,}$');
+    return regex.hasMatch(password);
+  }
 
   void register() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
+    final contact = contactController.text.trim();
 
-    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty || contact.isEmpty) {
       showError("Please fill all fields");
       return;
     }
@@ -32,17 +40,56 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
       return;
     }
 
+    if (!isValidPassword(password)) {
+      showError("Password must be 8+ chars, include @, number & letter");
+      return;
+    }
+
     setState(() => loading = true);
-    final repo = ref.read(authRepoProvider);
 
     try {
-      await repo.register(email, password);
+      final repo = ref.read(authRepoProvider);
 
-      // ✅ Navigate to ExpenseScreen and remove back history
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const ExpenseScreen()),
-      );
+      /// 🔍 Check if email/contact already exists in Firestore
+      final firestore = FirebaseFirestore.instance;
+
+      final emailCheck = await firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
+
+      final contactCheck = await firestore
+          .collection('users')
+          .where('contact', isEqualTo: contact)
+          .get();
+
+      if (emailCheck.docs.isNotEmpty) {
+        showError("Email already exists");
+        return;
+      }
+
+      if (contactCheck.docs.isNotEmpty) {
+        showError("Contact already exists");
+        return;
+      }
+
+      /// 🔐 Create Firebase Auth user
+      final user = await repo.register(email, password);
+
+      if (user != null) {
+        /// ✅ Save user in Firestore
+        await firestore.collection('users').doc(user.uid).set({
+          'email': email,
+          'contact': contact,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        /// 🚀 Navigate
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ExpenseScreen()),
+        );
+      }
     } on AuthException catch (e) {
       showError(e.message);
     } catch (e) {
@@ -79,6 +126,11 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
               controller: confirmPasswordController,
               decoration: const InputDecoration(labelText: "Confirm Password"),
               obscureText: true,
+            ),
+            TextField(
+              controller: contactController,
+              decoration: const InputDecoration(labelText: "Contact"),
+              keyboardType: TextInputType.phone,
             ),
             const SizedBox(height: 20),
             loading

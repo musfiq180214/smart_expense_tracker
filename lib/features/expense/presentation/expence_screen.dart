@@ -7,6 +7,7 @@ import 'package:smart_expense_tracker/features/expense/widgets/expense_chart.dar
 import 'package:smart_expense_tracker/features/expense/widgets/expense_list.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/expense_title_dropdown.dart';
 import 'package:smart_expense_tracker/features/expense/widgets/shimmer_chart.dart';
+import 'package:smart_expense_tracker/features/profile/presentation/profile_screen.dart';
 import '../provider/expense_provider.dart';
 import 'expence_list_screen.dart';
 
@@ -92,10 +93,19 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
         automaticallyImplyLeading: false, // removes back button
         actions: [
           IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+              );
+            },
+          ),
+
+          IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await ref.read(authRepoProvider).logout();
-              // Go back to login screen
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -199,14 +209,15 @@ class _ExpenseScreenState extends ConsumerState<ExpenseScreen> {
 
               const SizedBox(height: 16),
 
-
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const ExpenseListScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const ExpenseListScreen(),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
