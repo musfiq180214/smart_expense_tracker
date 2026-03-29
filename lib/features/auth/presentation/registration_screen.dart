@@ -30,7 +30,10 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     final confirmPassword = confirmPasswordController.text.trim();
     final contact = contactController.text.trim();
 
-    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty || contact.isEmpty) {
+    if (email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty ||
+        contact.isEmpty) {
       showError("Please fill all fields");
       return;
     }
@@ -50,41 +53,17 @@ class _RegistrationScreenState extends ConsumerState<RegistrationScreen> {
     try {
       final repo = ref.read(authRepoProvider);
 
-      /// 🔍 Check if email/contact already exists in Firestore
-      final firestore = FirebaseFirestore.instance;
-
-      final emailCheck = await firestore
-          .collection('users')
-          .where('email', isEqualTo: email)
-          .get();
-
-      final contactCheck = await firestore
-          .collection('users')
-          .where('contact', isEqualTo: contact)
-          .get();
-
-      if (emailCheck.docs.isNotEmpty) {
-        showError("Email already exists");
-        return;
-      }
-
-      if (contactCheck.docs.isNotEmpty) {
-        showError("Contact already exists");
-        return;
-      }
-
-      /// 🔐 Create Firebase Auth user
+      // ✅ Step 1: Create user
       final user = await repo.register(email, password);
 
       if (user != null) {
-        /// ✅ Save user in Firestore
-        await firestore.collection('users').doc(user.uid).set({
+        // ✅ Step 2: Save in Firestore
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
           'email': email,
           'contact': contact,
           'createdAt': FieldValue.serverTimestamp(),
         });
 
-        /// 🚀 Navigate
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const ExpenseScreen()),
